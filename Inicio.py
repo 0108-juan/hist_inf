@@ -20,6 +20,8 @@ if 'base64_image' not in st.session_state:
     st.session_state.base64_image = ""
 if 'story_created' not in st.session_state:
     st.session_state.story_created = False
+if 'canvas_created' not in st.session_state:
+    st.session_state.canvas_created = False
 
 def encode_image_to_base64(image_path):
     try:
@@ -141,6 +143,10 @@ st.markdown('<h2 class="sub-header">Dibuja tu boceto y descubre lo que la IA pue
 # Layout principal
 col1, col2 = st.columns([1, 1])
 
+# Variable para controlar el estado del canvas
+canvas_created = False
+canvas_result = None
+
 with col1:
     # Panel de dibujo con marco unificado
     st.markdown('<div class="section-header">🖌️ Panel de Dibujo</div>', unsafe_allow_html=True)
@@ -171,6 +177,11 @@ with col1:
     )
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Marcar que el canvas fue creado
+    if canvas_result is not None:
+        canvas_created = True
+        st.session_state.canvas_created = True
+    
     # Input de API Key con marco unificado
     st.markdown('<div class="section-header">🔑 Configuración API</div>', unsafe_allow_html=True)
     with st.container():
@@ -184,7 +195,7 @@ with col1:
         st.markdown('</div>', unsafe_allow_html=True)
     
     # Botón de análisis
-    if canvas_result.image_data is not None and ke:
+    if canvas_created and canvas_result.image_data is not None and ke:
         analyze_button = st.button(
             "🔍 Analizar Boceto con IA",
             type="primary",
@@ -238,7 +249,7 @@ with col2:
                 """)
 
     # Procesar análisis cuando se presiona el botón
-    if canvas_result.image_data is not None and ke and analyze_button:
+    if canvas_created and canvas_result.image_data is not None and ke and analyze_button:
         os.environ['OPENAI_API_KEY'] = ke
         api_key = os.environ['OPENAI_API_KEY']
 
@@ -256,7 +267,6 @@ with col2:
             # Llamada a la API de OpenAI
             try:
                 full_response = ""
-                message_placeholder = st.empty()
                 
                 response = openai.chat.completions.create(
                   model="gpt-4o-mini",
@@ -304,7 +314,7 @@ with col2:
     if st.session_state.analysis_done and not st.session_state.story_created:
         st.markdown('<div class="section-header">📚 Crear Historia Infantil</div>', unsafe_allow_html=True)
         
-        if st.button("✨ Crear Historia Infantil", use_container_width=True):
+        if st.button("✨ Crear Historia Infantil", use_container_width=True, key="story_button"):
             with st.spinner("🧚 Creando una historia mágica..."):
                 story_prompt = f"""
                 Basándote en esta descripción: '{st.session_state.full_response}', 
@@ -376,8 +386,10 @@ with st.sidebar:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Advertencias para el usuario - CORREGIDO
-if 'canvas_result' in locals() and canvas_result.image_data is not None and not ke:
-    st.warning("🔑 **Por favor ingresa tu API key de OpenAI para analizar el boceto.**")
-
-if 'canvas_result' in locals() and not canvas_result.image_data and ke:
-    st.info("🎨 **¡Dibuja algo en el canvas para comenzar el análisis!**")
+if canvas_created:
+    if canvas_result.image_data is not None and not ke:
+        st.warning("🔑 **Por favor ingresa tu API key de OpenAI para analizar el boceto.**")
+    elif not canvas_result.image_data and ke:
+        st.info("🎨 **¡Dibuja algo en el canvas para comenzar el análisis!**")
+else:
+    st.info("🔄 **La aplicación se está cargando...**")
