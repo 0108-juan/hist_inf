@@ -57,20 +57,29 @@ st.markdown("""
         margin-bottom: 2rem;
         font-weight: 400;
     }
-    .analysis-box {
+    .section-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 15px 15px 0 0;
+        margin: 2rem 0 0 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+    .analysis-content {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
         padding: 1.5rem;
-        border-radius: 15px;
-        margin: 1rem 0;
+        border-radius: 0 0 15px 15px;
+        margin: 0 0 2rem 0;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-    .story-box {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        color: #2d3748;
+    .story-content {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
         padding: 1.5rem;
-        border-radius: 15px;
-        margin: 1rem 0;
+        border-radius: 0 0 15px 15px;
+        margin: 0 0 2rem 0;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     .canvas-container {
@@ -79,6 +88,7 @@ st.markdown("""
         padding: 10px;
         background: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 1rem;
     }
     .stButton button {
         background: linear-gradient(45deg, #6a11cb, #2575fc);
@@ -105,6 +115,7 @@ st.markdown("""
         border: 2px solid #e2e8f0;
         border-radius: 10px;
         padding: 1rem;
+        margin-top: 1rem;
     }
     .feature-card {
         background: white;
@@ -112,6 +123,12 @@ st.markdown("""
         border-radius: 10px;
         border-left: 4px solid #6a11cb;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+    }
+    .instructions-box {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
         margin: 1rem 0;
     }
 </style>
@@ -125,8 +142,8 @@ st.markdown('<h2 class="sub-header">Dibuja tu boceto y descubre lo que la IA pue
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # Panel de dibujo
-    st.markdown("### 🖌️ Panel de Dibujo")
+    # Panel de dibujo con marco unificado
+    st.markdown('<div class="section-header">🖌️ Panel de Dibujo</div>', unsafe_allow_html=True)
     
     # Controles en tarjeta
     with st.container():
@@ -154,8 +171,8 @@ with col1:
     )
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Input de API Key
-    st.markdown("### 🔑 Configuración API")
+    # Input de API Key con marco unificado
+    st.markdown('<div class="section-header">🔑 Configuración API</div>', unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="api-key-input">', unsafe_allow_html=True)
         ke = st.text_input(
@@ -182,13 +199,13 @@ with col1:
         )
 
 with col2:
-    # Panel de resultados
-    st.markdown("### 📊 Resultados e Interpretación")
+    # Panel de resultados con marco unificado
+    st.markdown('<div class="section-header">📊 Resultados e Interpretación</div>', unsafe_allow_html=True)
     
     if not st.session_state.analysis_done:
         # Estado inicial - instrucciones
         with st.container():
-            st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+            st.markdown('<div class="instructions-box">', unsafe_allow_html=True)
             st.markdown("""
             ### 🎯 Instrucciones:
             1. **Dibuja** tu boceto en el panel izquierdo
@@ -262,7 +279,9 @@ with col2:
                 
                 if response.choices[0].message.content is not None:
                     full_response = response.choices[0].message.content
-                    message_placeholder.markdown(f'<div class="analysis-box"><h4>🎯 Análisis de la IA:</h4>{full_response}</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="analysis-content">', unsafe_allow_html=True)
+                    st.markdown(f'**🎯 Análisis de la IA:**\n\n{full_response}')
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Guardar en session_state
                 st.session_state.full_response = full_response
@@ -277,12 +296,13 @@ with col2:
 
     # Mostrar análisis previo si existe
     elif st.session_state.analysis_done:
-        st.markdown(f'<div class="analysis-box"><h4>🎯 Análisis de la IA:</h4>{st.session_state.full_response}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="analysis-content">', unsafe_allow_html=True)
+        st.markdown(f'**🎯 Análisis de la IA:**\n\n{st.session_state.full_response}')
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Funcionalidad de crear historia si ya se hizo el análisis
     if st.session_state.analysis_done and not st.session_state.story_created:
-        st.markdown("---")
-        st.markdown("### 📚 ¿Quieres crear una historia?")
+        st.markdown('<div class="section-header">📚 Crear Historia Infantil</div>', unsafe_allow_html=True)
         
         if st.button("✨ Crear Historia Infantil", use_container_width=True):
             with st.spinner("🧚 Creando una historia mágica..."):
@@ -300,7 +320,9 @@ with col2:
                         max_tokens=600,
                     )
                     
-                    st.markdown(f'<div class="story-box"><h4>📖 Tu Historia Mágica:</h4>{story_response.choices[0].message.content}</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="story-content">', unsafe_allow_html=True)
+                    st.markdown(f'**📖 Tu Historia Mágica:**\n\n{story_response.choices[0].message.content}')
+                    st.markdown('</div>', unsafe_allow_html=True)
                     st.session_state.story_created = True
                     
                 except Exception as e:
@@ -353,9 +375,9 @@ with st.sidebar:
     """)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Advertencias para el usuario
-if not ke and canvas_result.image_data is not None:
+# Advertencias para el usuario - CORREGIDO
+if 'canvas_result' in locals() and canvas_result.image_data is not None and not ke:
     st.warning("🔑 **Por favor ingresa tu API key de OpenAI para analizar el boceto.**")
 
-if not canvas_result.image_data and ke:
+if 'canvas_result' in locals() and not canvas_result.image_data and ke:
     st.info("🎨 **¡Dibuja algo en el canvas para comenzar el análisis!**")
